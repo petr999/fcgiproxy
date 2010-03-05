@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+use HTTP::Request::Common;
+use CGI;
 #
 #   CGIProxy 2.1beta19
 #
@@ -1368,7 +1370,7 @@ local($|)= 1 ;
 #   modify existing UPPER_CASE variables after the $HAS_BEGUN block above,
 #   don't set lower_case variables before here, and don't use UPPER_CASE
 #   variables for anything that will vary from run to run.
-reset 'a-z' ;
+ reset 'a-eg-z' ;
 $URL= '' ;     # (almost) only uppercase variable that varies from run to run
 
 
@@ -1875,20 +1877,6 @@ if ( $is_html  && ($body ne '') && !$response_sent ) {
     #   decompression exactly undoes compression.  Inefficient.  :(
     # jsm-- is there a better way, e.g. simply not compressing windows-1256
     #   text, or converting all text to utf-8?
-    if ($ENV{HTTP_ACCEPT_ENCODING}=~ /\bgzip\b/i) {
-	eval { require Compress::Zlib } ;
-	if (!$@) {
-	    my $body_pre= $body ;
-	    my $body2= $body= Compress::Zlib::memGzip($body_pre) ;
-	    my $body_post= Compress::Zlib::memGunzip($body2) ;
-	    if ($body_pre eq $body_post) {
-		$headers= "Content-Encoding: gzip\015\012" . $headers ;
-	    } else {
-		# Set $body back to what it was before the compression.
-		$body= $body_pre ;
-	    }
-	}
-    }
 
     # Change Content-Length header, since we changed the content
     $headers=~ s/^Content-Length:.*\012/
@@ -3123,7 +3111,6 @@ sub proxify_html {
 		    #$attrs.= (' ' . $name), next   if $value eq '' ;
 
 		    $value=~ s/&/&amp;/g ;
-		    $value=~ s/([^\x00-\x7f])/'&#' . ord($1) . ';'/ge ;
 		    $value=~ s/</&lt;/g ;
 		    $value=~ s/>/&gt;/g ;
 		    if ($value!~ /"/ || $value=~ /'/) {
@@ -4232,17 +4219,37 @@ sub http_get {
 
 	    # Otherwise...
 	    $lefttoget= $ENV{'CONTENT_LENGTH'} ;
-	    print S 'Content-type: ', $ENV{'CONTENT_TYPE'}, "\015\012",
-		    'Content-length: ', $lefttoget, "\015\012\015\012" ;
+	    print S 'Content-type: ', $ENV{'CONTENT_TYPE'}, "\015\012";
 
 	    if (@postbody) {
+		print S 'Content-length: ', $lefttoget, "\015\012\015\012" ;
 		print S @postbody ;
 	    } else {
 		$body_too_big= ($lefttoget > $MAX_REQUEST_SIZE) ;
 
 		# Loop to guarantee all is read from STDIN.
 		do {
-		    $lefttoget-= read(STDIN, $postblock, $lefttoget) ;
+					my $cgi = new CGI;
+					$postblock = HTTP::Request::Common::POST( $ENV{'REQUEST_URI'},
+															"Content_Type" => $ENV{'CONTENT_TYPE'},
+															"Content" => [ 
+																map { 
+																			my $val = $cgi->param( $_ );
+																			if( 'Fh' eq ref $val ){
+	      																$val =  [ ${ $cgi->{'.tmpfiles'}->{
+																						 ${ $cgi->param( $_ ) }
+																					}->{name} },
+																					$cgi->param( $_ ) ,
+																				];
+																			}
+																			$_ => $val 
+																		}
+																			$cgi->param
+															],   
+														)->content
+					;
+		    $lefttoget-= $lefttoget; 
+				print S 'Content-length: ', length( $postblock ), "\015\012\015\012" ;
 		    print S $postblock ;
 		    # efficient-- only doing test when input is slow anyway.
 		    push(@postbody, $postblock) unless $body_too_big ;
@@ -4587,10 +4594,6 @@ sub http_get {
 		    # gzip the response body if we're allowed and able.
 		    if ($ENV{HTTP_ACCEPT_ENCODING}=~ /\bgzip\b/i) {
 			eval { require Compress::Zlib } ;
-			if (!$@) {
-			    $body= Compress::Zlib::memGzip($body) ;
-			    $headers= "Content-Encoding: gzip\015\012" . $headers ;
-			}
 		    }
 
 		    $headers=~ s/^Content-Length:.*/
@@ -6325,34 +6328,7 @@ sub get_chunked_body {
 #   it concatenates the values into one hash element, delimiting with "\0".
 # Returns undef on error.
 sub getformvars {
-    my($in)= @_ ;
-    my(%in, $name, $value) ;
-
-    # If no string is passed, read it from the usual channels.
-    unless (defined($in)) {
-	if ( ($ENV{'REQUEST_METHOD'} eq 'GET') ||
-	     ($ENV{'REQUEST_METHOD'} eq 'HEAD') ) {
-	    $in= $ENV{'QUERY_STRING'} ;
-	} elsif ($ENV{'REQUEST_METHOD'} eq 'POST') {
-	    return undef unless
-		lc($ENV{'CONTENT_TYPE'}) eq 'application/x-www-form-urlencoded';
-	    return undef unless defined($ENV{'CONTENT_LENGTH'}) ;
-	    $in= &read_socket('STDIN', $ENV{'CONTENT_LENGTH'}) ;
-	    # should we return undef if not all bytes were read?
-	} else {
-	    return undef ;   # unsupported REQUEST_METHOD
-	}
-    }
-
-    foreach (split(/[&;]/, $in)) {
-	s/\+/ /g ;
-	($name, $value)= split('=', $_, 2) ;
-	$name=~ s/%([\da-fA-F]{2})/ pack('C', hex($1)) /ge ;
-	$value=~ s/%([\da-fA-F]{2})/ pack('C', hex($1)) /ge ;
-	$in{$name}.= "\0" if defined($in{$name}) ;  # concatenate multiple vars
-	$in{$name}.= $value ;
-    }
-    return %in ;
+		my $cgi = new CGI; return %{ $cgi->Vars };
 }
 
 
