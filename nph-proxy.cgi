@@ -1,6 +1,4 @@
 #!/usr/bin/perl
-use HTTP::Request::Common;
-use CGI;
 #
 #   CGIProxy 2.1beta19
 #
@@ -156,6 +154,10 @@ use CGI;
 use strict ;
 use Socket ;
 
+use HTTP::Request::Common;
+use CGI;
+use URI;
+
 # First block below is config variables, second block is sort-of config
 #   variables, third block is persistent constants, fourth block is would-be
 #   persistent constants (not set until needed), fifth block is constants for
@@ -241,6 +243,8 @@ use vars qw(
 # Under mod_perl, persistent constants only need to be initialized once, so
 #   use this one-time block to do so.
 unless ($HAS_BEGUN) {
+
+$URI::ABS_REMOTE_LEADING_DOTS = 1;
 
 #--------------------------------------------------------------------------
 #    user configuration
@@ -389,6 +393,13 @@ $ALLOW_USER_CONFIG= 1 ;
 
 sub proxy_encode {
     my($URL)= @_ ;
+		my @url_array = split /\//, $URL;
+		if( 3 < scalar @url_array ){
+			my $base_url = join '/', map{
+				shift @url_array;
+			} ( 0..2 );
+			$URL = URI->new( join '/', @url_array )->abs( $base_url );
+		}
     $URL=~ s#^([\w+.-]+)://#$1/# ;                 # http://xxx -> http/xxx
 #    $URL=~ s/(.)/ sprintf('%02x',ord($1)) /ge ;   # each char -> 2-hex
 #    $URL=~ tr/a-zA-Z/n-za-mN-ZA-M/ ;              # rot-13
