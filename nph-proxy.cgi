@@ -1381,7 +1381,7 @@ local($|)= 1 ;
 #   modify existing UPPER_CASE variables after the $HAS_BEGUN block above,
 #   don't set lower_case variables before here, and don't use UPPER_CASE
 #   variables for anything that will vary from run to run.
- reset 'a-eg-z' ;
+ reset 'a-eg-wyz' ;
 $URL= '' ;     # (almost) only uppercase variable that varies from run to run
 
 
@@ -4674,7 +4674,14 @@ sub http_get {
 		print $status, $headers ;
 
 		# If using SSL, read() could return 0 and truncate data. :P
-		print $buf while read(S, $buf, 16384) ;
+		if ($headers=~ /^Transfer-Encoding:[ \t]*chunked\b/mi) {
+		    ($body, $footers)= &get_chunked_body('S') ;
+		    &HTMLdie(&HTMLescape("Error reading chunked response from $URL ."))
+			unless defined($body) ;
+			print $body;
+		} else {
+			print $buf while read(S, $buf, 16384) ;
+		}
 
 		$response_sent= 1 ;
 
