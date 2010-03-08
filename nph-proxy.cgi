@@ -395,7 +395,7 @@ sub proxy_encode {
     my($URL)= @_ ;
 		my @url_array = split /\//, $URL;
 		if( 3 < scalar @url_array ){
-			my $scheme = lc $url_array[0];
+			my $scheme = lc $url_array[0]; chop $scheme;
 			eval "use URI::$scheme;";
 			unless( $@ ){
 				my $base_url = join '/', map{
