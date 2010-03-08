@@ -395,10 +395,14 @@ sub proxy_encode {
     my($URL)= @_ ;
 		my @url_array = split /\//, $URL;
 		if( 3 < scalar @url_array ){
-			my $base_url = join '/', map{
-				shift @url_array;
-			} ( 0..2 );
-			$URL = URI->new( join '/', @url_array )->abs( $base_url );
+			my $scheme = lc $url_array[0];
+			eval "use URI::$scheme;";
+			unless( $@ ){
+				my $base_url = join '/', map{
+					shift @url_array;
+				} ( 0..2 );
+				$URL = URI->new( join '/', @url_array )->abs( $base_url );
+			}
 		}
     $URL=~ s#^([\w+.-]+)://#$1/# ;                 # http://xxx -> http/xxx
 #    $URL=~ s/(.)/ sprintf('%02x',ord($1)) /ge ;   # each char -> 2-hex
@@ -4678,9 +4682,9 @@ sub http_get {
 		    ($body, $footers)= &get_chunked_body('S') ;
 		    &HTMLdie(&HTMLescape("Error reading chunked response from $URL ."))
 			unless defined($body) ;
-			print $body;
+				print $body;
 		} else {
-			print $buf while read(S, $buf, 16384) ;
+				print $buf while read(S, $buf, 16384) ;
 		}
 
 		$response_sent= 1 ;
