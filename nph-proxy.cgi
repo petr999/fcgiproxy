@@ -4678,7 +4678,7 @@ sub http_get {
 		print $status, $headers ;
 
 		# If using SSL, read() could return 0 and truncate data. :P
-		if ($headers=~ /^Transfer-Encoding:[ \t]*chunked\b/mi) {
+		if ($RUNNING_ON_SSL_SERVER and $headers=~ /^Transfer-Encoding:[ \t]*chunked\b/mi) {
 		    ($body, $footers)= &get_chunked_body('S') ;
 		    &HTMLdie(&HTMLescape("Error reading chunked response from $URL ."))
 			unless defined($body) ;
