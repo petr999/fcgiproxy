@@ -1876,7 +1876,7 @@ if ($scheme eq 'http') {
 
 # jsm-- this structure has gotten sloppy.  Probably should integrate this
 #   into http_get() etc.
-if ( $is_html  && ($body ne '') && !$response_sent ) {
+if ( $is_html  && !$response_sent ) {
 
     $body= &proxify_html(\$body, 1) ;
 
