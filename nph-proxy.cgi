@@ -401,7 +401,9 @@ sub proxy_encode {
 				my $base_url = join '/', map{
 					shift @url_array;
 				} ( 0..2 );
+				my $last_slash = 1 if '/' eq substr $URL, length( $URL )-1, 1;
 				$URL = URI->new( join '/', @url_array )->abs( $base_url );
+				$URL .= '/' if $last_slash;
 			}
 		}
     $URL=~ s#^([\w+.-]+)://#$1/# ;                 # http://xxx -> http/xxx
@@ -1878,6 +1880,7 @@ if ($scheme eq 'http') {
 #   into http_get() etc.
 if ( $is_html  && !$response_sent ) {
 
+			if(length $body){
     $body= &proxify_html(\$body, 1) ;
 
     # Must change to byte string before compressing or sending.
@@ -1892,6 +1895,7 @@ if ( $is_html  && !$response_sent ) {
     #   decompression exactly undoes compression.  Inefficient.  :(
     # jsm-- is there a better way, e.g. simply not compressing windows-1256
     #   text, or converting all text to utf-8?
+			}
 
     # Change Content-Length header, since we changed the content
     $headers=~ s/^Content-Length:.*\012/
