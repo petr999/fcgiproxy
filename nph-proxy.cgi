@@ -239,6 +239,7 @@ use vars qw(
    $swflib
    $debug ) ;
 
+$response_sent = 0;
 
 # Under mod_perl, persistent constants only need to be initialized once, so
 #   use this one-time block to do so.
@@ -1884,7 +1885,7 @@ if ( $is_html  && !$response_sent ) {
     $body= &proxify_html(\$body, 1) ;
 
     # Must change to byte string before compressing or sending.
-    eval { utf8::encode($body) } if ($is_utf8) ;
+    #	eval { utf8::encode($body) } if ($is_utf8) ;
 
     # gzip the response body if we're allowed and able.
     # Note that Compress::Zlib::memGunzip() destroys its input, thus $body2 .
@@ -4608,7 +4609,7 @@ sub http_get {
 		    $body= (&proxify_block($body, $type))[0] ;
 
 		    # Re-enbyte $body if needed.
-		    eval { utf8::encode($body) } if ($is_utf8) ;
+		    #	eval { utf8::encode($body) } if ($is_utf8) ;
 
 		    # gzip the response body if we're allowed and able.
 		    if ($ENV{HTTP_ACCEPT_ENCODING}=~ /\bgzip\b/i) {
