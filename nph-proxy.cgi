@@ -2132,6 +2132,7 @@ sub proxify_html {
 
 
     # second line was: (?:(<!--.*?--\s*> | <!--.*?> )  # order is important
+		$$body_ref =~ s!^.*?'.*<\s*/?script.*$!!mg;
     while ( $$body_ref=~ m{\G([^<]*)
 			     (?:(<!--(?=.*?-->).*?--\s*> | <!--(?!.*?-->).*?> )
 			       |(<\s*script\b.*?<\s*/script\b.*?>)
