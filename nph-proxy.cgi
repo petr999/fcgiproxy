@@ -240,6 +240,7 @@ use vars qw(
    $debug ) ;
 
 $response_sent = 0;
+$is_html = 0;
 
 # Under mod_perl, persistent constants only need to be initialized once, so
 #   use this one-time block to do so.
