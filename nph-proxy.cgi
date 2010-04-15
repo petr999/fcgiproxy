@@ -3295,7 +3295,7 @@ sub proxify_html {
 		    eval { $new_script= (&proxify_block($script, $type))[0] } ;
 		    last unless $@ ;
 		    if ($@ eq "end_of_input\n") {
-			my($more)= $$body_ref=~ m#\G(.*?)<\s*/script\b.*?>#sgci ;
+			my($more)= $$body_ref=~ m#\G(.*?)<\s*/script\b.*?>#sci ;
 			$new_script= '', last unless $more ;
 			$script.= "<\\/script>" . $more ;
 		    } else {
