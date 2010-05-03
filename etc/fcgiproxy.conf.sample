@@ -1,0 +1,16 @@
+package main;
+
+use strict;
+use warnings;
+
+# Location of your CGIProxy
+our $url_proxy = 'scheme://some.host.name/nph-proxy.cgi';
+# Default flags for squid redirector; this is the what CGIProxy use to insert for you.
+my $flags = '000010A';
+
+### NO user-serviceable parts below this line ###
+
+
+our $url_start = join( '/', $url_proxy, $flags, ).'/';
+
+1;
