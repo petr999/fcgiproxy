@@ -177,14 +177,15 @@ sub full_url {
   return undef if $main::scripts_are_banned_here ;
   return $uri_ref unless $main::PROXIFY_SCRIPTS ;
   my($script)= $uri_ref=~ /^(?:javascript|livescript):(.*)$/si ;
-  my($rest, $last)= &separate_last_js_statement(\$script) ;
+  my($rest, $last)= &main::separate_last_js_statement(\$script) ;
   $last=~ s/\s*;\s*$// ;
-  return 'javascript:' . (&proxify_js($rest, 1))[0]
-           . '; _proxy_jslib_proxify_html(' . (&proxify_js($last, 0))[0] . ')[0]' ;
+  return 'javascript:' . (&main::proxify_js($rest, 1))[0]
+           . '; _proxy_jslib_proxify_html(' . (&main::proxify_js($last, 0))[0] . ')[0]' ;
     }
 
     # Separate fragment from URI
-    my($uri, $frag)= $uri_ref=~ /^([^#]*)(#.*)?/ ;
+    my($uri, $frag)= ( '', '', );
+    ($uri, $frag)= $uri_ref=~ /^([^#]*)(#.*)?/ ;
     return $uri_ref if $uri eq '' ;  # allow bare fragments to pass unchanged
 
     # Hack here-- some sites (e.g. eBay) create erroneous URLs with linefeeds
@@ -193,7 +194,7 @@ sub full_url {
     $uri=~ s/[\015\012]//g ;
 
     # Sometimes needed for SWF apps; see comments above this routine.
-    my($query) ;
+    my $query = '' ;
     ($uri, $query)= split(/\?/, $uri)  if $retain_query ;
     $query= '?' . $query   if $query ;
 
