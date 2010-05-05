@@ -6893,7 +6893,8 @@ $up_link&nbsp;&nbsp;
 &nbsp;&nbsp;<input type="checkbox" id="rs" name="rs"$rs_on /><label for="rs" style="display: inline">&nbsp;No&nbsp;scripts</label>
 &nbsp;&nbsp;<input type="checkbox" id="fa" name="fa"$fa_on /><label for="fa" style="display: inline">&nbsp;No&nbsp;ads</label>
 &nbsp;&nbsp;<input type="checkbox" id="br" name="br"$br_on /><label for="br" style="display: inline">&nbsp;No&nbsp;referrer</label>
-&nbsp;&nbsp;<input type="checkbox" id="if" name="if"$if_on /><label for="if" style="display: inline">&nbsp;Show&nbsp;this&nbsp;form</label>&nbsp;&nbsp;
+&nbsp;&nbsp;<input type="checkbox" id="if" name="if"$if_on /><label for="if" style="display: inline">&nbsp;Show&nbsp;this&nbsp;form</label>
+&nbsp;&nbsp;<a href='$safe_URL'>Link&nbsp;to&nbsp;this&nbsp;page</label>&nbsp;&nbsp;
 </font>
 $table_close
 </center>
