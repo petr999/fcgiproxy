@@ -27,7 +27,7 @@ my $url_proxy_length = length $main::url_proxy;
 use Data::Dumper;
 while ( <> ) {
   ($url, $addr, $fqdn, $ident, $method) = m:(\S*) ?(\S*)?/?(\S*)? ?(\S*)? ?(\S*)?:;
-  ( $url =  '302:'.
+  ( $url =  # '302:'.
            full_url( $url ) )
     unless ( $method eq 'CONNECT' ) or $main::url_proxy eq substr $url, 0, $url_proxy_length;
 } continue {

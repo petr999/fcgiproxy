@@ -182,7 +182,7 @@ use URI;
 #   $RE_JS_STRING_LITERAL_START, $RE_JS_STRING_REMAINDER_1, and
 #   $RE_JS_STRING_REMAINDER_2 as part of the workaround.
 use vars qw(
-   $TEXT_ONLY
+   $TEXT_ONLY $TRANSPARENT_MODE 
    $REMOVE_COOKIES  $REMOVE_SCRIPTS  $FILTER_ADS  $HIDE_REFERER
    $INSERT_ENTRY_FORM  $ALLOW_USER_CONFIG
    @ALLOWED_SERVERS  @BANNED_SERVERS  @BANNED_NETWORKS
@@ -265,6 +265,12 @@ $URI::ABS_REMOTE_LEADING_DOTS = 1;
 #--------------------------------------------------------------------------
 #    user configuration
 #--------------------------------------------------------------------------
+
+# If set, then no urls/cookies/etc. rewrite will happen
+# To be used in conjunction with squid/nginx 'url rewrite' feature
+
+$TRANSPARENT_MODE = 1;
+
 
 # If set, then proxy traffic will be restricted to text data only, to save
 #   bandwidth (though it can still be circumvented with uuencode, etc.).
@@ -1798,9 +1804,12 @@ $default_script_type= 'application/x-javascript' ;
 
 
 # Parse the cookie for real cookies and authentication information.
-($cookie_to_server, %auth)=
-    &parse_cookie($ENV{'HTTP_COOKIE'}, $path, $host, $port, $scheme) ;
-
+if( $TRANSPARENT_MODE ){
+  $cookie_to_server = $ENV{'HTTP_COOKIE'};
+} else {
+  ($cookie_to_server, %auth)=
+     &parse_cookie($ENV{'HTTP_COOKIE'}, $path, $host, $port, $scheme) ;
+}
 
 #--------------------------------------------------------------------------
 #    Retrieve the resource into $body using the correct scheme,
@@ -1834,10 +1843,10 @@ if ($scheme eq 'http') {
 if ( $is_html  && !$response_sent ) {
 
 			if(length $body){
-    $body= &proxify_html(\$body, 1) ;
+    $body= &proxify_html(\$body, 1) unless $TRANSPARENT_MODE;
 
     # Must change to byte string before compressing or sending.
-    #	eval { utf8::encode($body) } if ($is_utf8) ;
+    eval { utf8::encode($body) } if ($is_utf8) ;
 
     # gzip the response body if we're allowed and able.
     # Note that Compress::Zlib::memGunzip() destroys its input, thus $body2 .
@@ -4219,7 +4228,7 @@ sub http_get {
 	# Now, fix the headers with &http_fix().  It uses &full_url(), and
 	#   may modify the headers we just extracted the base URL from.
 	# This also includes cookie support.
-	&http_fix ;
+	&http_fix unless $TRANSPARENT_MODE;
 
 
 
@@ -5306,12 +5315,12 @@ sub new_header_value {
     #   Content-Type:, and that retrieved resource may still be treated by the
     #   browser as of the expected type.  Here we just carry forward the entire
     #   flag segment.
-    if ($name eq 'location') {
-	my $old_url_start = $url_start;
-	$url_start= $script_url . '/' . $packed_flags . '/' ;
-	my $rv = &full_url($value);
-	$url_start = $old_url_start;
-	return  $rv;
+    if( not( $TRANSPARENT_MODE ) and $name eq 'location') {
+      my $old_url_start = $url_start;
+      $url_start= $script_url . '/' . $packed_flags . '/' ;
+      my $rv = &full_url($value);
+      $url_start = $old_url_start;
+      return  $rv;
     }
 
 
