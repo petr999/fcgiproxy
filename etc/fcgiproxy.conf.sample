@@ -4,9 +4,15 @@ use strict;
 use warnings;
 
 # Location of your CGIProxy
-our $url_proxy = 'scheme://some.host.name/nph-proxy.cgi';
+#our $scheme_host_proxy = 'scheme://some.host.name:34567';
+our $scheme_host_proxy = 'scheme://some.host.name';
+our $url_proxy = $scheme_host_proxy.'/rcqMuyEb3GoXXZHA.fsp';
 # Default flags for squid redirector; this is the what CGIProxy use to insert for you.
 my $flags = '000010A';
+
+# address separate from http for nginx to listen for incoming https requests
+our $ssl_addr = '127.0.0.2';
+
 
 ### NO user-serviceable parts below this line ###
 
