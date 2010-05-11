@@ -4480,6 +4480,7 @@ sub http_get {
 		    } else {
 			#undef $/ ;
 			#$body= &read_socket('S', 32768) ;
+      $body = '';
 			while( read S, my $partbody, 32768 ){
         $body .= $partbody;
       }
