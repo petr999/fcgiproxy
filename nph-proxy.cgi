@@ -4478,8 +4478,12 @@ sub http_get {
 
 		    # If not chunked or sized, read entire input into $body.
 		    } else {
-			undef $/ ;
-			$body= <S> ;
+			#undef $/ ;
+			#$body= &read_socket('S', 32768) ;
+			while( read S, my $partbody, 32768 ){
+        $body .= $partbody;
+      }
+			# $body= <S> ;
 			shutdown(S, 0) ;  # without this, IIS+MSIE hangs
 		    }
 
