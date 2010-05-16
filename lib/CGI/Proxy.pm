@@ -206,7 +206,11 @@ sub full_url {
     : $uri=~ m#^\?#           ?  $main::base_file . $uri    # abs_path, rel URL
     :                            $main::base_path . $uri ;  # relative path
 
-    my $rv = $main::url_start . &wrap_proxy_encode($absurl) . $query . $frag ;
+    my $rv = $main::url_start;
+    my $rv_add = &wrap_proxy_encode($absurl);
+    $rv .= $rv_add if defined $rv_add;
+    $rv .= $query if defined $query;
+    $rv .= $frag if defined $frag;
     return $rv ;
 }
 
