@@ -923,7 +923,7 @@ $SHOW_FTP_WELCOME= 1 ;
 #   scripts to function through the proxy, than to provide bulletproof
 #   anonymity.
 # The best advice remains:  FOR BEST ANONYMITY, BROWSE WITH SCRIPTS TURNED OFF.
-$PROXIFY_SCRIPTS= 1 ;
+$PROXIFY_SCRIPTS= 0 ;
 
 
 # If set, then modify ShockWave Flash resources as well as possible such that
